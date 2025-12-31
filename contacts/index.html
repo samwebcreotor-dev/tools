@@ -1,0 +1,532 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<style>
+html{
+height:100%;
+}
+body{
+height:100%;
+margin:0px;
+background-color:#F1F1DB;
+overflow:hidden;
+}
+.container{
+max-width:300px;
+min-width:132px;
+height:90%;
+margin:8px;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+z-index:1;
+}
+.block1{
+height:100%;
+}
+.a1{
+max-width:100%;
+margin-bottom:10px;
+display:flex;
+flex-direction:column;
+}
+.a1 input{
+margin-bottom:5px;
+background-color:#FAFAF0;
+color:#3F3F3A;
+placeholder:#9A9A85;
+border:1px solid #D8D8B8;
+outline:none;
+border-color:#BFC7A6;
+}
+.a1 number{
+
+}
+input[data-display="view"]{
+display:block;
+}
+input[data-display="none"]{
+display:none;
+}
+.a1 button{
+margin-bottom:2px;
+padding:3px;
+}
+.a1 .green{
+color:white;
+background-color:#AEBFA6;
+border:none;
+color:#2F3A2F;
+}
+.a1 .gray{
+color:black;
+background-color:#C9D6C2;
+border:0px;
+}
+.a2, .a3{
+max-width:100%;
+height:auto;
+overflow:auto;
+}
+.a3{
+
+}
+.infoBlock{
+margin-top:30px;
+}
+.company, .contact{
+padding:3px;
+}
+.company{
+color:3A3F33;
+background-color:#E6EBD8;
+}
+.contact{
+background-color: #E9EDD9;
+border: 1px solid #D3D8C2;
+color: #3A3F33;
+}
+.company:hover{
+background-color:#D9DFC8;
+}
+.contact:hover{
+background-color: #DEE4CB;
+border-color: #C7CDB3;
+}
+
+.questionContainer{
+position:absolute;
+width:100%;
+height:100%;
+top:0px;
+left:0px;
+display:none;
+justify-content:center;
+align-items:center;
+z-index:2;
+background-color: rgba(90, 95, 80, 0.35);
+}
+.questionBlock{
+padding:5px;
+background-color: #FAFAF0;
+border: 1px solid #D6D8C8;
+border-radius: 14px;
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+.questionText{
+color: #3F3F3A;
+}
+.blockX01{
+display:flex;
+justify-content:center;
+}
+.questionBtn{
+margin:10px;
+}
+.questionBtn[data-answer="no"]{
+background-color: #C9D6C2;
+border: 1px solid #B8C6B0;
+color: #2F3A2F;
+}
+.questionBtn[data-answer="yes"]{
+background-color: #E6CFC9;
+border: 1px solid #D1B8B2;
+color: #4A2F2B;
+}
+.contact[data-style="on"]{
+background-color:#E6B8B7;
+}
+.contact[data-style="off"]{
+background-color:white;
+}
+</style>
+
+<div class="container">
+<div class="block1">
+<div class="a1" data-type="company">
+<input type="text">
+<input class="number" data-display="none" type="number">
+<button class="green">Save</button>
+<button class="gray">Back</button>
+<button class="gray">Delete</button>
+</div>
+<div class="a2"></div>
+<div class="a3"></div>
+
+
+</div>
+
+<div class="infoBlock">aaaa</div>
+</div>
+
+<aside class="questionContainer" data-of="delete">
+<div class="questionBlock">
+<div class="questionText">Группа [name] будет удален</div>
+<div class="blockX01">
+<button class="questionBtn" data-answer="yes">Yes</button>
+<button class="questionBtn" data-answer="no">No</button>
+</div>
+</div>
+</aside>
+
+
+<script>
+function dq(arg){
+return document.querySelector(arg);
+}
+function dqa(arg){
+return document.querySelectorAll(arg);
+}
+function eq(arg1, arg2){
+let e1 = document.querySelector(arg1);
+return e1.querySelector(arg2);
+}
+function eqa(arg1, arg2){
+let e1 = document.querySelector(arg1);
+return e1.querySelectorAll(arg2);
+}
+function ce(arg){
+return document.createElement(arg);
+}
+
+const container = dq(".container");
+const a1 = eq(".container", ".a1");
+const input = eqa(".container", "input");
+const button = eqa(".container", "button");
+const infoBlock = eq(".container", ".infoBlock");
+const a = [];
+for(let i = 2; i < 4; i++){
+a.push(eq(".container", `.a${i}`));
+}
+const questContainer = dq(".questionContainer");
+const questText = eq(".questionContainer", ".questionText");
+const btnQ = eqa(".questionContainer", ".questionBtn");
+
+let arr = [];
+
+
+let obj = {
+pageType : "Company",
+companyIndex : -1,
+contactIndex : -1,
+selectIndex : "",
+selectFrom : "",
+deleteObject : "off",
+}
+
+getStorage();
+
+
+
+renderCompany();
+
+
+
+function interface(){
+a[0].style.maxHeight = window.innerHeight - input[0].offsetHeight - input[1].offsetHeight - button[0].offsetHeight - button[1].offsetHeight - button[2].offsetHeight - infoBlock.offsetHeight - 50 + "px";
+
+a[1].style.maxHeight = window.innerHeight - input[0].offsetHeight - input[1].offsetHeight - button[0].offsetHeight - button[1].offsetHeight - button[2].offsetHeight - infoBlock.offsetHeight - 50 + "px";
+}
+interface();
+
+
+function renderContact(){
+a[1].innerHTML = "";
+for(let i = 0; i < arr[obj.selectIndex].contacts.length; i++){
+obj.contactIndex = obj.contactIndex + 1;
+appendContact(i, arr[obj.selectIndex].contacts[i].from, arr[obj.selectIndex].contacts[i].name, arr[obj.selectIndex].contacts[i].phone);
+}
+}
+
+function renderCompany(){
+if(arr != null){
+for(let i = 0; i < arr.length; i++){
+appendCompany(i, arr[i].company);
+}
+renderArrCompany();
+}
+}
+
+function renderArrCompany(){
+for(let i = 0; i < arr.length; i++){
+arr[i].id = i;
+}
+}
+
+
+function display(block, none){
+block.style.display = "block";
+none.style.display = "none";
+}
+
+
+function deleteContact(from){
+arr[parseInt(from)].contacts.splice(obj.selectIndex, 1);
+obj.contactIndex = obj.contactIndex - 1;
+obj.selectFrom = "";
+renderContact();
+}
+
+
+
+function contactClick(){
+let element = event.target.closest(".contact");
+
+if(obj.deleteObject === "off"){
+let from = parseInt(element.dataset.from);
+obj.selectIndex = parseInt(element.dataset.id);
+}
+else if(obj.deleteObject === "on"){
+let from = parseInt(element.dataset.from);
+obj.selectIndex = parseInt(element.dataset.id);
+obj.selectFrom = parseInt(element.dataset.from);
+questContainerOn(element);
+}
+styleContactOn(element);
+}
+
+
+function deleteCompany(){
+arr.splice(obj.selectIndex, 1);
+obj.selectIndex = "";
+obj.companyIndex = obj.companyIndex - 1;
+}
+
+
+function companyClick(){
+input[1].dataset.display = "view";
+if(obj.deleteObject === "off"){
+obj.selectIndex = parseInt(event.target.dataset.id);
+display(a[1], a[0]);
+obj.pageType = "Contact";
+renderContact();
+styleBackOn();
+}
+else if(obj.deleteObject === "on"){
+obj.selectIndex = parseInt(event.target.dataset.id);
+questContainerOn();
+}
+}
+
+
+function styleBackOn(){
+button[1].className = "green";
+}
+function styleBackOff(){
+button[1].className = "gray";
+}
+function styleDeleteOn(){
+obj.deleteObject = "on";
+button[2].className = "green";
+}
+function styleDeleteOff(){
+obj.deleteObject = "off";
+button[2].className = "gray";
+}
+function styleContactOn(e){
+let contact = e;
+let contacts = eqa(".a3", ".contact");
+for(let i = 0; i < contacts.length; i++){
+contacts[i].dataset.style = "off";
+}
+contact.dataset.style = "on";
+}
+function styleContactOff(e){
+let contacts = eqa(".a3", ".contact");
+for(let i = 0; i < contacts.length; i++){
+contacts[i].dataset.style = "off";
+}
+}
+
+
+function backClick(){
+input[1].dataset.display = "none";
+obj.selectIndex = "";
+obj.pageType = "Company";
+display(a[0], a[1]);
+styleBackOff();
+}
+
+
+function appendCompany(companyIndex, inputNameValue){
+let company = ce("div");
+company.className = "company";
+company.dataset.id = companyIndex;
+company.innerText = inputNameValue;
+a[0].append(company);
+}
+
+
+function appendContact(contactIndex, from, inputName, inputPhone){
+let contact = ce("div");
+let name = ce("div");
+let phone = ce("div");
+contact.append(name);
+contact.append(phone);
+contact.className = "contact";
+name.className = "name";
+phone.className = "phone";
+contact.dataset.id = contactIndex;
+contact.dataset.from = from;
+contact.dataset.style = "off";
+name.innerText = inputName;
+phone.innerText = inputPhone;
+a[1].append(contact);
+}
+
+
+function inputNull(){
+if(obj.pageType === "Company"){
+input[0].value = "";
+}
+else if(obj.pageType === "Contact"){
+input[0].value = "";
+input[1].value = "";
+}
+}
+
+function questContainerOn(){
+if(event.target.className === "company"){
+questText.innerText = `вы хотите удалить группу ${event.target.innerText} ?`;
+questContainer.style.display = "flex";
+}
+else if(event.target.className === "name" || event.target.className === "phone"){
+console.log(event);
+let contact = event.target.closest(".contact");
+questText.innerText = `вы хотите удалить контакт ${contact.querySelector(".name").innerText} ?`;
+questContainer.style.display = "flex";
+
+}
+}
+
+function questContainerOff(){
+questContainer.style.display = "none";
+}
+
+function clickYes(){
+if(obj.deleteObject === "on" && obj.pageType === "Company"){
+a[0].innerHTML = "";
+deleteCompany();
+renderCompany();
+styleDeleteOff();
+questContainerOff();
+}
+else if(obj.deleteObject === "on" && obj.pageType === "Contact"){
+a[1].innerHTML = "";
+deleteContact(obj.selectFrom);
+renderContact();
+questContainerOff();
+
+}
+}
+
+function clickNo(){
+questContainerOff();
+}
+
+btnQ[0].onclick = function(){
+clickYes();
+}
+
+btnQ[1].onclick = function(){
+clickNo();
+styleDeleteOff();
+}
+
+
+
+
+
+function pushContact(){
+obj.contactIndex = obj.contactIndex + 1;
+arr[obj.selectIndex].contacts.push({id : obj.contactIndex, from : obj.selectIndex,  name : input[0].value, phone : input[1].value});
+}
+
+function pushCompany(){
+obj.companyIndex = obj.companyIndex + 1;
+arr.push({id : obj.companyIndex, company : input[0].value, contacts : []});
+}
+
+
+function setStorage(){
+let storageText = JSON.stringify(arr);
+let objStorageText = JSON.stringify({pageType : "Company", companyIndex : obj.companyIndex, contactIndex : obj.contactIndex, selectIndex : "", selectFrom : "", deleteObject : "off"});
+
+window.localStorage.setItem("groupPhone1", storageText);
+window.localStorage.setItem("objectPhone1", objStorageText);
+}
+
+function getStorage(){
+if(window.localStorage.getItem("groupPhone1") != null && window.localStorage.getItem("objectPhone1") != null){
+arr = JSON.parse(window.localStorage.getItem("groupPhone1"));
+obj = JSON.parse(window.localStorage.getItem("objectPhone1"));
+}
+else{
+arr = [];
+
+obj = {
+pageType : "Company",
+companyIndex : -1,
+contactIndex : -1,
+selectIndex : "",
+selectFrom : "",
+deleteObject : "off",
+}
+}
+}
+
+
+button[0].onclick = function(){
+
+if(obj.pageType === "Company" && input[0].value != ""){
+
+pushCompany();
+appendCompany(obj.companyIndex, input[0].value);
+inputNull();
+}
+if(obj.pageType === "Contact" && input[0].value != "" && input[1].value != ""){
+
+pushContact();
+appendContact(obj.contactIndex, obj.selectIndex, input[0].value, input[1].value);
+inputNull();
+}
+}
+
+
+button[1].onclick = function(){
+backClick();
+}
+
+button[2].onclick = function(){
+if(obj.deleteObject === "off"){
+obj.deleteObject = "on";
+styleDeleteOn();
+}
+else if(obj.deleteObject === "on"){
+obj.deleteObject = "off";
+styleDeleteOff();
+}
+styleContactOff();
+}
+
+window.onclick = function(event){
+if(event.target.className === "company"){
+companyClick();
+}
+else if(event.target.className === "name" || event.target.className === "phone"){
+contactClick();
+}
+console.log(event.target.className);
+}
+
+window.onbeforeunload = function(){
+setStorage();
+}
+
+</script>
+</body>
+</html>
